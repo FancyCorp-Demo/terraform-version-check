@@ -3,7 +3,7 @@ terraform {
     organization = "fancycorp"
 
     workspaces {
-      name = "admin-updates"
+      tags = ["admin"]
     }
   }
 }
