@@ -97,7 +97,7 @@ output "num" {
 #
 
 
-resource "null_resource" "assert" {
+resource "terraform_data" "assert" {
   lifecycle {
     precondition {
       condition     = local.num_workspaces == 0
