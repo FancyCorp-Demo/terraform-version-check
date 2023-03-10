@@ -8,101 +8,16 @@ terraform {
   }
 }
 
-
-
-#
-# Get Latest TF Version
-#
-
-data "http" "checkpoint-terraform" {
-  url = "https://checkpoint-api.hashicorp.com/v1/check/terraform"
-
-  # Optional request headers
-  request_headers = {
-    Accept = "application/json"
-  }
+module "versions" {
+  source = "hashi-strawb/workspace-version-check/tfe"
 }
 
-locals {
-  latest_version = jsondecode(data.http.checkpoint-terraform.response_body).current_version
+output "workspaces_with_old_versions" {
+  value = module.versions.workspaces_with_old_versions
 }
-
-output "latest_version" {
-  value = local.latest_version
+output "workspaces_and_versions" {
+  value = module.versions.workspaces_and_versions
 }
-
-
-
-#
-# List all Workspaces
-#
-
-
-variable "tfc_org" {
-  default = "fancycorp"
-}
-
-
-data "tfe_workspace_ids" "all" {
-  names        = ["*"]
-  organization = var.tfc_org
-}
-
-
-
-data "tfe_workspace" "workspace" {
-  for_each = data.tfe_workspace_ids.all.ids
-
-  name         = each.key
-  organization = var.tfc_org
-}
-
-
-
-#
-# List all workspaces which do not use the latest TF Version
-#
-
-
-locals {
-  workspaces_and_versions = {
-    for k, v in data.tfe_workspace.workspace :
-    k => v.terraform_version
-  }
-
-  workspaces_with_old_versions = {
-    for k, v in data.tfe_workspace.workspace :
-    k => v.terraform_version if
-    v.terraform_version != local.latest_version
-  }
-
-  num_workspaces = length(keys(local.workspaces_with_old_versions))
-}
-
-
-
-output "ws" {
-  value = local.workspaces_with_old_versions
-}
-output "ws_all" {
-  value = local.workspaces_and_versions
-}
-output "num" {
-  value = local.num_workspaces
-}
-
-
-
-#
-# Assert that there are no workspaces using old versions
-#
-
-
-resource "terraform_data" "assert" {
-  lifecycle {
-    precondition {
-      condition     = local.num_workspaces == 0
-      error_message = "Detected workspaces with old Terraform:\n${jsonencode(local.workspaces_with_old_versions)}"
-    }
-  }
+output "num_workspaces_with_old_versions" {
+  value = module.versions.num_workspaces_with_old_versions
 }

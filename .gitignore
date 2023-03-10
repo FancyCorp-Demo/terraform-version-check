@@ -3,3 +3,9 @@
 .terraform/environment
 .terraform.lock.hcl
 .terraform/terraform.tfstate
+
+
+
+
+# Submodule dev
+terraform-tfe-workspace-version-check
