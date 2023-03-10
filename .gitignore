@@ -1,3 +1,5 @@
 .terraform/modules
 .terraform/providers
 .terraform/environment
+.terraform.lock.hcl
+.terraform/terraform.tfstate

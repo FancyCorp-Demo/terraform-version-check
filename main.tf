@@ -77,14 +77,15 @@ locals {
   }
 
   num_workspaces = length(keys(local.workspaces_with_old_versions))
-
-  workspace_names = join("\n\t -", keys(local.workspaces_with_old_versions))
 }
 
 
 
 output "ws" {
   value = local.workspaces_with_old_versions
+}
+output "ws_all" {
+  value = local.workspaces_and_versions
 }
 output "num" {
   value = local.num_workspaces
@@ -101,7 +102,7 @@ resource "terraform_data" "assert" {
   lifecycle {
     precondition {
       condition     = local.num_workspaces == 0
-      error_message = "Detected workspaces with old Terraform:\n\t- ${local.workspace_names}"
+      error_message = "Detected workspaces with old Terraform:\n${jsonencode(local.workspaces_with_old_versions)}"
     }
   }
 }
